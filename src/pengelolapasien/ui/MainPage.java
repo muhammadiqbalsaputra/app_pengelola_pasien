@@ -135,7 +135,14 @@ public class MainPage extends javax.swing.JFrame {
         txtNIK.setText(model.getValueAt(mRow, 2).toString());        // NIK
         txtTelepon.setText(model.getValueAt(mRow, 3).toString());    // Telepon
         txtAlamat.setText(model.getValueAt(mRow, 4).toString());     // Alamat
-        dateTanggalMasuk.setDate((java.util.Date) model.getValueAt(mRow, 5));
+        try {
+            String tglStr = model.getValueAt(mRow, 5).toString(); // misalnya "2025-07-07"
+            java.util.Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(tglStr);
+            dateTanggalMasuk.setDate(parsedDate);
+        } catch (Exception e) {
+            e.printStackTrace();
+            dateTanggalMasuk.setDate(null);
+        }
         cmbJenisKelamin.setSelectedItem(model.getValueAt(mRow, 6));  // JK
         txtDiagnosa.setText(model.getValueAt(mRow, 7).toString());   // Diagnosa
     }
