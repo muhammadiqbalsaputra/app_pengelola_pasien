@@ -18,10 +18,13 @@ import java.util.Vector;
 import javax.swing.table.TableColumn;
 import pengelolapasien.db.DBConnection;
 import pengelolapasien.model.Pasien;
+import pengelolapasien.dao.PasienDAO;   // ⬅ import
+import java.util.List;                  // ⬅ import
 
 public class MainPage extends javax.swing.JFrame {
 
     DefaultTableModel model;
+    private final PasienDAO pasienDAO = new PasienDAO();
 
     public MainPage() {
         initComponents();
@@ -30,45 +33,59 @@ public class MainPage extends javax.swing.JFrame {
         loadComboJenisKelamin();                            // ⬅️ panggilan penting
         setLocationRelativeTo(null);
 
-        loadDataPasien();
+        loadDataPasienAsync();
         hideIdColumn();
     }
 
     // ===========  CRUD & UTIL ===========
-    private void loadDataPasien() {
-        model.setRowCount(0);
-        try (Connection conn = DBConnection.getConnection(); Statement st = conn.createStatement(); ResultSet rs = st.executeQuery("SELECT * FROM pasien")) {
-            while (rs.next()) {
-                Vector<Object> v = new Vector<>();
-                v.add(rs.getInt("id"));
-                v.add(rs.getString("nama"));
-                v.add(rs.getString("nik"));
-                v.add(rs.getString("telepon"));
-                v.add(rs.getString("alamat"));
-                v.add(rs.getDate("tanggal_masuk"));
-                v.add(rs.getString("jenis_kelamin"));
-                v.add(rs.getString("diagnosa"));
-                model.addRow(v);
+    /**
+     * Memuat data pasien di background supaya UI tetap responsif
+     */
+    private void loadDataPasienAsync() {
+
+        btnRefresh.setEnabled(false);          // opsional: matikan tombol
+
+        new javax.swing.SwingWorker<java.util.List<Pasien>, Void>() {
+
+            @Override
+            protected java.util.List<Pasien> doInBackground() throws Exception {
+                // proses berat → thread terpisah
+                return pasienDAO.findAll();
             }
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(this, "Gagal load: " + ex.getMessage());
-        }
-        hideIdColumn();
+
+            @Override
+            protected void done() {
+                try {
+                    tampilkanKeTabel(get());  // hasil ditampilkan di EDT
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(MainPage.this,
+                            "Gagal load: " + ex.getMessage());
+                } finally {
+                    btnRefresh.setEnabled(true);
+                }
+            }
+        }.execute();
     }
 
     private void tambahPasien() {
         if (!validasiInput()) {
             return;
         }
-        try (Connection conn = DBConnection.getConnection()) {
-            String sql = "INSERT INTO pasien (nama,nik,telepon,alamat,tanggal_masuk,diagnosa,jenis_kelamin) VALUES (?,?,?,?,?,?,?)";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            isiPreparedStatement(ps, false, 0);
-            ps.executeUpdate();
+
+        try {
+            Pasien p = new Pasien(
+                    txtNama.getText().trim(),
+                    txtNIK.getText().trim(),
+                    txtTelepon.getText().trim(),
+                    txtAlamat.getText().trim(),
+                    dateTanggalMasuk.getDate(),
+                    cmbJenisKelamin.getSelectedItem().toString(),
+                    txtDiagnosa.getText().trim()
+            );
+            pasienDAO.insert(p);                    // ← DAO
             JOptionPane.showMessageDialog(this, "Pasien ditambahkan!");
             clearForm();
-            loadDataPasien();
-            hideIdColumn();
+            loadDataPasienAsync();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Gagal tambah: " + ex.getMessage());
         }
@@ -76,26 +93,28 @@ public class MainPage extends javax.swing.JFrame {
 
     private void updatePasien() {
         int row = tblPasien.getSelectedRow();
-        if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih data dari tabel terlebih dahulu!");
+        if (row == -1 || !validasiInput()) {
             return;
         }
 
-        if (!validasiInput()) {
-            return;
-        }
+        int modelRow = tblPasien.convertRowIndexToModel(row);
+        int id = (int) model.getValueAt(modelRow, 0);
 
-        int id = (int) model.getValueAt(tblPasien.convertRowIndexToModel(row), 0);
-
-        try (Connection conn = DBConnection.getConnection()) {
-            String sql = "UPDATE pasien SET nama=?, nik=?, telepon=?, alamat=?, tanggal_masuk=?, diagnosa=?, jenis_kelamin=? WHERE id=?";
-            PreparedStatement ps = conn.prepareStatement(sql);
-            isiPreparedStatement(ps, true, id); // withId=true
-            ps.executeUpdate();
-
-            JOptionPane.showMessageDialog(this, "Data berhasil diubah!");
+        try {
+            Pasien p = new Pasien(
+                    id,
+                    txtNama.getText().trim(),
+                    txtNIK.getText().trim(),
+                    txtTelepon.getText().trim(),
+                    txtAlamat.getText().trim(),
+                    dateTanggalMasuk.getDate(),
+                    cmbJenisKelamin.getSelectedItem().toString(),
+                    txtDiagnosa.getText().trim()
+            );
+            pasienDAO.update(p);                    // ← DAO
+            JOptionPane.showMessageDialog(this, "Data di‑update!");
             clearForm();
-            loadDataPasien();
+            loadDataPasienAsync();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Gagal update: " + ex.getMessage());
         }
@@ -104,21 +123,20 @@ public class MainPage extends javax.swing.JFrame {
     private void hapusPasien() {
         int row = tblPasien.getSelectedRow();
         if (row == -1) {
-            JOptionPane.showMessageDialog(this, "Pilih data!");
             return;
         }
         int id = (int) model.getValueAt(tblPasien.convertRowIndexToModel(row), 0);
-        if (JOptionPane.showConfirmDialog(this, "Yakin hapus?", "Konfirmasi", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+
+        if (JOptionPane.showConfirmDialog(this, "Yakin hapus?", "Konfirmasi",
+                JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
             return;
         }
-        try (Connection conn = DBConnection.getConnection()) {
-            PreparedStatement ps = conn.prepareStatement("DELETE FROM pasien WHERE id=?");
-            ps.setInt(1, id);
-            ps.executeUpdate();
+
+        try {
+            pasienDAO.delete(id);                   // ← DAO
             JOptionPane.showMessageDialog(this, "Data terhapus!");
             clearForm();
-            loadDataPasien();
-            hideIdColumn();
+            loadDataPasienAsync();
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(this, "Gagal hapus: " + ex.getMessage());
         }
@@ -639,11 +657,26 @@ public class MainPage extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+/**
+     * Update JTable; harus dipanggil di Event Dispatch Thread
+     */
+    private void tampilkanKeTabel(java.util.List<Pasien> list) {
+        model.setRowCount(0);
+        for (Pasien p : list) {
+            model.addRow(new Object[]{
+                p.getId(), p.getNama(), p.getNik(), p.getTelepon(),
+                p.getAlamat(), p.getTanggalMasuk(),
+                p.getJenisKelamin(), p.getDiagnosa()
+            });
+        }
+        hideIdColumn();
+    }
+
 
     private void txtCariActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtCariActionPerformed
         String keyword = txtCari.getText().trim();
         if (keyword.isEmpty()) {
-            loadDataPasien();
+            loadDataPasienAsync();
             return;
         }
         model.setRowCount(0);
@@ -669,6 +702,7 @@ public class MainPage extends javax.swing.JFrame {
         }
         hideIdColumn();                                 // sembunyikan lagi
     }//GEN-LAST:event_txtCariActionPerformed
+
 
     private void txtDiagnosaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDiagnosaActionPerformed
         // TODO add your handling code here:
@@ -702,7 +736,7 @@ public class MainPage extends javax.swing.JFrame {
 
     private void btnRefreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRefreshActionPerformed
         clearForm();
-        loadDataPasien();        // muat ulang tabel
+        loadDataPasienAsync();        // muat ulang tabel
         hideIdColumn();
     }//GEN-LAST:event_btnRefreshActionPerformed
 
