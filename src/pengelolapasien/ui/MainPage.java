@@ -20,6 +20,8 @@ import pengelolapasien.db.DBConnection;
 import pengelolapasien.model.Pasien;
 import pengelolapasien.dao.PasienDAO;   // ⬅ import
 import java.util.List;                  // ⬅ import
+import java.util.Locale;
+import pengelolapasien.i18n.I18n;
 
 public class MainPage extends javax.swing.JFrame {
 
@@ -30,11 +32,20 @@ public class MainPage extends javax.swing.JFrame {
         initComponents();
 
         model = (DefaultTableModel) tblPasien.getModel();   // pastikan model di‑init
+
+        cmbBahasa = new javax.swing.JComboBox<>();
+        cmbBahasa.addItem("Indonesia");
+        cmbBahasa.addItem("English");
+        cmbBahasa.addActionListener(e -> onLanguageChanged());
+
+        settingsPanel.add(cmbBahasa);
+
         loadComboJenisKelamin();                            // ⬅️ panggilan penting
         setLocationRelativeTo(null);
 
         loadDataPasienAsync();
         hideIdColumn();
+        applyI18n();
     }
 
     // ===========  CRUD & UTIL ===========
@@ -335,6 +346,9 @@ public class MainPage extends javax.swing.JFrame {
         btnBackup = new javax.swing.JButton();
         btnRestore = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
+        jLabel10 = new javax.swing.JLabel();
+        lblSectionTitle = new javax.swing.JLabel();
+        cmbBahasa = new javax.swing.JComboBox<>();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -488,7 +502,7 @@ public class MainPage extends javax.swing.JFrame {
                             .addComponent(txtAlamat, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(formPanelLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 612, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 620, Short.MAX_VALUE)
                                 .addComponent(btnRestore)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnBackup)
@@ -597,15 +611,50 @@ public class MainPage extends javax.swing.JFrame {
 
         jTabbedPane1.addTab("Data", pasienPanel);
 
+        jLabel10.setBackground(new java.awt.Color(255, 255, 255));
+        jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
+        jLabel10.setText("Bahasa :");
+
+        lblSectionTitle.setBackground(new java.awt.Color(255, 255, 255));
+        lblSectionTitle.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        lblSectionTitle.setText("PENGATURAN");
+
+        cmbBahasa.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "English", "Indonesia", " " }));
+        cmbBahasa.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbBahasaActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout settingsPanelLayout = new javax.swing.GroupLayout(settingsPanel);
         settingsPanel.setLayout(settingsPanelLayout);
         settingsPanelLayout.setHorizontalGroup(
             settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 1245, Short.MAX_VALUE)
+            .addGroup(settingsPanelLayout.createSequentialGroup()
+                .addGap(67, 67, 67)
+                .addComponent(jLabel10)
+                .addGap(59, 59, 59)
+                .addComponent(cmbBahasa, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(949, Short.MAX_VALUE))
+            .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, settingsPanelLayout.createSequentialGroup()
+                    .addContainerGap(547, Short.MAX_VALUE)
+                    .addComponent(lblSectionTitle)
+                    .addGap(543, 543, 543)))
         );
         settingsPanelLayout.setVerticalGroup(
             settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 428, Short.MAX_VALUE)
+            .addGroup(settingsPanelLayout.createSequentialGroup()
+                .addGap(124, 124, 124)
+                .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10)
+                    .addComponent(cmbBahasa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(278, Short.MAX_VALUE))
+            .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(settingsPanelLayout.createSequentialGroup()
+                    .addGap(40, 40, 40)
+                    .addComponent(lblSectionTitle)
+                    .addContainerGap(356, Short.MAX_VALUE)))
         );
 
         jTabbedPane1.addTab("Settings", settingsPanel);
@@ -703,6 +752,41 @@ public class MainPage extends javax.swing.JFrame {
         hideIdColumn();                                 // sembunyikan lagi
     }//GEN-LAST:event_txtCariActionPerformed
 
+    private void onLanguageChanged() {
+        String selected = (String) cmbBahasa.getSelectedItem();
+        if ("English".equals(selected)) {
+            I18n.setLocale(new java.util.Locale("en"));
+        } else {
+            I18n.setLocale(new java.util.Locale("id"));
+        }
+        applyI18n();        // refresh semua label
+    }
+
+    private void applyI18n() {
+        setTitle(I18n.t("app.title"));
+
+        jLabel1.setText(I18n.t("app.title"));
+        jLabel2.setText(I18n.t("label.name") + " :");
+        jLabel3.setText(I18n.t("label.phone") + " :");
+        jLabel4.setText(I18n.t("label.address") + " :");
+        jLabel5.setText(I18n.t("label.date") + " :");
+        jLabel6.setText(I18n.t("label.gender") + " :");
+        jLabel7.setText(I18n.t("label.diagnosis") + " :");
+        jLabel9.setText(I18n.t("search"));
+
+        btnTambah.setText(I18n.t("btn.add"));
+        btnEdit.setText(I18n.t("btn.edit"));
+        btnHapus.setText(I18n.t("btn.delete"));
+        btnRefresh.setText(I18n.t("btn.refresh"));
+        btnLogout.setText(I18n.t("btn.logout"));
+        btnBackup.setText(I18n.t("btn.backup"));
+        btnRestore.setText(I18n.t("btn.restore"));
+
+//        cmbJenisKelamin.removeAllItems();
+//        cmbJenisKelamin.addItem(I18n.t("gender.male"));
+//        cmbJenisKelamin.addItem(I18n.t("gender.female"));
+    }
+
 
     private void txtDiagnosaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtDiagnosaActionPerformed
         // TODO add your handling code here:
@@ -769,6 +853,18 @@ public class MainPage extends javax.swing.JFrame {
         restoreDataPasien();
     }//GEN-LAST:event_btnRestoreActionPerformed
 
+    private void cmbBahasaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBahasaActionPerformed
+//        String selected = cmbBahasa.getSelectedItem().toString();
+//
+//        if (selected.equalsIgnoreCase("Indonesia")) {
+//            pengelolapasien.i18n.I18n.setLocale(new java.util.Locale("id"));
+//        } else {
+//            pengelolapasien.i18n.I18n.setLocale(new java.util.Locale("en"));
+//        }
+//
+//        applyI18n();  // update semua label/tombol
+    }//GEN-LAST:event_cmbBahasaActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -812,10 +908,12 @@ public class MainPage extends javax.swing.JFrame {
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnRestore;
     private javax.swing.JButton btnTambah;
+    private javax.swing.JComboBox<String> cmbBahasa;
     private javax.swing.JComboBox<String> cmbJenisKelamin;
     private com.toedter.calendar.JDateChooser dateTanggalMasuk;
     private javax.swing.JPanel formPanel;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -829,6 +927,7 @@ public class MainPage extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JLabel lblSectionTitle;
     private javax.swing.JPanel pasienPanel;
     private javax.swing.JPanel settingsPanel;
     private javax.swing.JTable tblPasien;
