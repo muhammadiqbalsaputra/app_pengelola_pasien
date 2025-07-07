@@ -3,11 +3,19 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/auth/PasswordHasher.java</file>
-            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/ui/MainPage.java</file>
-            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/db/DBConnection.java</file>
-            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/auth/LoginForm.java</file>
             <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/auth/RegisterForm.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/auth/PasswordHasher.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/util/BackupUtil.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/i18n/messages_en.properties</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/dao/PasienDAO.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/i18n/messages_id.properties</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/db/DBConnection.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/ui/MainPage.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/util/GenericDAO.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/i18n/I18n.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/model/Pasien.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/auth/LoginForm.java</file>
+            <file>file:/C:/Users/LENOVO/Documents/NetBeansProjects/pengelolapasien/src/pengelolapasien/i18n/messages.properties</file>
         </group>
     </open-files>
 </project-private>

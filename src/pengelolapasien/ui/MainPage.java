@@ -33,13 +33,6 @@ public class MainPage extends javax.swing.JFrame {
 
         model = (DefaultTableModel) tblPasien.getModel();   // pastikan model di‑init
 
-        cmbBahasa = new javax.swing.JComboBox<>();
-        cmbBahasa.addItem("Indonesia");
-        cmbBahasa.addItem("English");
-        cmbBahasa.addActionListener(e -> onLanguageChanged());
-
-        settingsPanel.add(cmbBahasa);
-
         loadComboJenisKelamin();                            // ⬅️ panggilan penting
         setLocationRelativeTo(null);
 
@@ -78,9 +71,26 @@ public class MainPage extends javax.swing.JFrame {
         }.execute();
     }
 
+    private String uiToDbGender(String uiValue) {
+        return uiValue.equals(I18n.t("gender.male")) ? "Laki-laki" : "Perempuan";
+    }
+
+    private String dbToUiGender(String dbValue) {
+        return dbValue.equalsIgnoreCase("Laki-laki") ? I18n.t("gender.male")
+                : I18n.t("gender.female");
+    }
+
     private void tambahPasien() {
         if (!validasiInput()) {
             return;
+        }
+        String selectedGenderLabel = cmbJenisKelamin.getSelectedItem().toString();
+        String jenisKelamin;
+
+        if (selectedGenderLabel.equals(I18n.t("gender.male"))) {
+            jenisKelamin = "Laki-laki";
+        } else {
+            jenisKelamin = "Perempuan";
         }
 
         try {
@@ -174,6 +184,14 @@ public class MainPage extends javax.swing.JFrame {
         }
         cmbJenisKelamin.setSelectedItem(model.getValueAt(mRow, 6));  // JK
         txtDiagnosa.setText(model.getValueAt(mRow, 7).toString());   // Diagnosa
+
+        String jkDB = model.getValueAt(mRow, 6).toString();
+        if (jkDB.equalsIgnoreCase("Laki-laki")) {
+            cmbJenisKelamin.setSelectedItem(I18n.t("gender.male"));
+        } else {
+            cmbJenisKelamin.setSelectedItem(I18n.t("gender.female"));
+        }
+
     }
 
     private void clearForm() {
@@ -347,8 +365,9 @@ public class MainPage extends javax.swing.JFrame {
         btnRestore = new javax.swing.JButton();
         settingsPanel = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
-        lblSectionTitle = new javax.swing.JLabel();
-        cmbBahasa = new javax.swing.JComboBox<>();
+        lblPengaturan = new javax.swing.JLabel();
+        btnBahasaIndonesia = new javax.swing.JButton();
+        btnBahasaInggris = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -378,6 +397,9 @@ public class MainPage extends javax.swing.JFrame {
         jLabel8.setFont(new java.awt.Font("Arial", 0, 14)); // NOI18N
         jLabel8.setText("NIK :");
 
+        btnTambah.setBackground(new java.awt.Color(51, 255, 0));
+        btnTambah.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnTambah.setForeground(new java.awt.Color(255, 255, 255));
         btnTambah.setText("Tambah");
         btnTambah.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -385,6 +407,9 @@ public class MainPage extends javax.swing.JFrame {
             }
         });
 
+        btnHapus.setBackground(new java.awt.Color(255, 0, 0));
+        btnHapus.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnHapus.setForeground(new java.awt.Color(255, 255, 255));
         btnHapus.setText("Hapus");
         btnHapus.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -392,6 +417,9 @@ public class MainPage extends javax.swing.JFrame {
             }
         });
 
+        btnRefresh.setBackground(new java.awt.Color(51, 51, 255));
+        btnRefresh.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnRefresh.setForeground(new java.awt.Color(255, 255, 255));
         btnRefresh.setText("Refresh");
         btnRefresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -399,6 +427,9 @@ public class MainPage extends javax.swing.JFrame {
             }
         });
 
+        btnEdit.setBackground(new java.awt.Color(255, 255, 0));
+        btnEdit.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnEdit.setForeground(new java.awt.Color(51, 51, 51));
         btnEdit.setText("Edit");
         btnEdit.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -502,7 +533,7 @@ public class MainPage extends javax.swing.JFrame {
                             .addComponent(txtAlamat, javax.swing.GroupLayout.Alignment.TRAILING))
                         .addGroup(formPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(formPanelLayout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 620, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 626, Short.MAX_VALUE)
                                 .addComponent(btnRestore)
                                 .addGap(18, 18, 18)
                                 .addComponent(btnBackup)
@@ -615,14 +646,21 @@ public class MainPage extends javax.swing.JFrame {
         jLabel10.setFont(new java.awt.Font("Segoe UI", 0, 18)); // NOI18N
         jLabel10.setText("Bahasa :");
 
-        lblSectionTitle.setBackground(new java.awt.Color(255, 255, 255));
-        lblSectionTitle.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        lblSectionTitle.setText("PENGATURAN");
+        lblPengaturan.setBackground(new java.awt.Color(255, 255, 255));
+        lblPengaturan.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        lblPengaturan.setText("PENGATURAN");
 
-        cmbBahasa.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "English", "Indonesia", " " }));
-        cmbBahasa.addActionListener(new java.awt.event.ActionListener() {
+        btnBahasaIndonesia.setText("Indonesia");
+        btnBahasaIndonesia.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cmbBahasaActionPerformed(evt);
+                btnBahasaIndonesiaActionPerformed(evt);
+            }
+        });
+
+        btnBahasaInggris.setText("Inggris");
+        btnBahasaInggris.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnBahasaInggrisActionPerformed(evt);
             }
         });
 
@@ -633,13 +671,15 @@ public class MainPage extends javax.swing.JFrame {
             .addGroup(settingsPanelLayout.createSequentialGroup()
                 .addGap(67, 67, 67)
                 .addComponent(jLabel10)
-                .addGap(59, 59, 59)
-                .addComponent(cmbBahasa, javax.swing.GroupLayout.PREFERRED_SIZE, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(949, Short.MAX_VALUE))
+                .addGap(65, 65, 65)
+                .addComponent(btnBahasaIndonesia)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(btnBahasaInggris)
+                .addContainerGap(904, Short.MAX_VALUE))
             .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, settingsPanelLayout.createSequentialGroup()
-                    .addContainerGap(547, Short.MAX_VALUE)
-                    .addComponent(lblSectionTitle)
+                    .addContainerGap(553, Short.MAX_VALUE)
+                    .addComponent(lblPengaturan)
                     .addGap(543, 543, 543)))
         );
         settingsPanelLayout.setVerticalGroup(
@@ -648,12 +688,13 @@ public class MainPage extends javax.swing.JFrame {
                 .addGap(124, 124, 124)
                 .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel10)
-                    .addComponent(cmbBahasa, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(278, Short.MAX_VALUE))
+                    .addComponent(btnBahasaIndonesia)
+                    .addComponent(btnBahasaInggris))
+                .addContainerGap(277, Short.MAX_VALUE))
             .addGroup(settingsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(settingsPanelLayout.createSequentialGroup()
                     .addGap(40, 40, 40)
-                    .addComponent(lblSectionTitle)
+                    .addComponent(lblPengaturan)
                     .addContainerGap(356, Short.MAX_VALUE)))
         );
 
@@ -752,16 +793,16 @@ public class MainPage extends javax.swing.JFrame {
         hideIdColumn();                                 // sembunyikan lagi
     }//GEN-LAST:event_txtCariActionPerformed
 
-    private void onLanguageChanged() {
-        String selected = (String) cmbBahasa.getSelectedItem();
-        if ("English".equals(selected)) {
-            I18n.setLocale(new java.util.Locale("en"));
-        } else {
-            I18n.setLocale(new java.util.Locale("id"));
-        }
-        applyI18n();        // refresh semua label
-    }
-
+//    private void onLanguageChanged() {
+//        String selected = (String) cmbBahasa.getSelectedItem();
+//        if ("English".equals(selected)) {
+//            I18n.setLocale(new Locale("en"));
+//        } else {
+//            I18n.setLocale(new Locale("id"));
+//        }
+//
+//        applyI18n();  // update semua teks di UI
+//    }
     private void applyI18n() {
         setTitle(I18n.t("app.title"));
 
@@ -773,6 +814,7 @@ public class MainPage extends javax.swing.JFrame {
         jLabel6.setText(I18n.t("label.gender") + " :");
         jLabel7.setText(I18n.t("label.diagnosis") + " :");
         jLabel9.setText(I18n.t("search"));
+        lblPengaturan.setText(I18n.t("pengaturan")+ " :");
 
         btnTambah.setText(I18n.t("btn.add"));
         btnEdit.setText(I18n.t("btn.edit"));
@@ -782,9 +824,10 @@ public class MainPage extends javax.swing.JFrame {
         btnBackup.setText(I18n.t("btn.backup"));
         btnRestore.setText(I18n.t("btn.restore"));
 
-//        cmbJenisKelamin.removeAllItems();
-//        cmbJenisKelamin.addItem(I18n.t("gender.male"));
-//        cmbJenisKelamin.addItem(I18n.t("gender.female"));
+        // refresh isi combo gender
+        cmbJenisKelamin.removeAllItems();
+        cmbJenisKelamin.addItem(I18n.t("gender.male"));
+        cmbJenisKelamin.addItem(I18n.t("gender.female"));
     }
 
 
@@ -853,17 +896,17 @@ public class MainPage extends javax.swing.JFrame {
         restoreDataPasien();
     }//GEN-LAST:event_btnRestoreActionPerformed
 
-    private void cmbBahasaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbBahasaActionPerformed
-//        String selected = cmbBahasa.getSelectedItem().toString();
-//
-//        if (selected.equalsIgnoreCase("Indonesia")) {
-//            pengelolapasien.i18n.I18n.setLocale(new java.util.Locale("id"));
-//        } else {
-//            pengelolapasien.i18n.I18n.setLocale(new java.util.Locale("en"));
-//        }
-//
-//        applyI18n();  // update semua label/tombol
-    }//GEN-LAST:event_cmbBahasaActionPerformed
+    private void btnBahasaIndonesiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBahasaIndonesiaActionPerformed
+        // TODO add your handling code here:
+        I18n.setLocale(new Locale("id"));
+        applyI18n();
+    }//GEN-LAST:event_btnBahasaIndonesiaActionPerformed
+
+    private void btnBahasaInggrisActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBahasaInggrisActionPerformed
+        // TODO add your handling code here:
+        I18n.setLocale(new Locale("en"));
+        applyI18n();
+    }//GEN-LAST:event_btnBahasaInggrisActionPerformed
 
     /**
      * @param args the command line arguments
@@ -902,13 +945,14 @@ public class MainPage extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnBackup;
+    private javax.swing.JButton btnBahasaIndonesia;
+    private javax.swing.JButton btnBahasaInggris;
     private javax.swing.JButton btnEdit;
     private javax.swing.JButton btnHapus;
     private javax.swing.JButton btnLogout;
     private javax.swing.JButton btnRefresh;
     private javax.swing.JButton btnRestore;
     private javax.swing.JButton btnTambah;
-    private javax.swing.JComboBox<String> cmbBahasa;
     private javax.swing.JComboBox<String> cmbJenisKelamin;
     private com.toedter.calendar.JDateChooser dateTanggalMasuk;
     private javax.swing.JPanel formPanel;
@@ -927,7 +971,7 @@ public class MainPage extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel lblSectionTitle;
+    private javax.swing.JLabel lblPengaturan;
     private javax.swing.JPanel pasienPanel;
     private javax.swing.JPanel settingsPanel;
     private javax.swing.JTable tblPasien;
